@@ -1,0 +1,7 @@
+Run Enviroment
+& "H:\My Drive\CS4300 - Advanced Software Engineering\Project\.venvWanderly\Scripts\activate.ps1"
+
+Run web server
+python manage.py runserver 0.0.0.0:3000 
+
+
