@@ -13,3 +13,7 @@ setuptools==68.1.2
 six==1.16.0
 sqlparse==0.4.4
 django-bootstrap5
+gunicorn==23.0.0
+whitenoise==6.7.0
+dj-database-url==2.3.0
+psycopg[binary]==3.2.10
