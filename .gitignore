@@ -1,2 +1,3 @@
 staticfiles/
-.venvHW2/
+.venvHW2/.venv/
+**/.venvHW2/
