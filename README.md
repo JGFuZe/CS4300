@@ -20,6 +20,11 @@
   python manage.py test
 
 
+## Render URL
+
+
+
+
 ## AI Use
 
 - I used AI (chatGTP Codex) to help create the main page by explaing how to certain bootstrap effects and make edits to html/bootstrap that I dont know off of my head.
