@@ -66,31 +66,43 @@ class SeatBookingView(LoginRequiredMixin, generic.CreateView):
         return initial
 
     def form_valid(self, form):
-        booking = form.save(commit=False)  # build object without saving
-        booking.user = self.request.user  # track which user booked
-        booking.save()  # persist booking
+        booking = form.save(commit=False)   # form object without saving
+        booking.user = self.request.user    # track which user booked
+        booking.save()                      # persist booking
 
+        # Select and update the booked seat
         seat = booking.seat
-        if not seat.booking_status:
-            seat.booking_status = True  # mark seat as taken
-            seat.save(update_fields=['booking_status'])
 
+        # Check again if the seat is still available
+        if not seat.booking_status:
+            seat.booking_status = True                  # mark as booked
+            seat.save(update_fields=['booking_status']) # save change
+
+        # Notify the user of success
         messages.success(
             self.request,
             f'Seat {seat.seat_number} booked for {booking.movie.title}.'
         )
+
+        # Set the created booking as the view's object
         self.object = booking
+
+        # Redirect to the success URL
         return HttpResponseRedirect(self.get_success_url())
 
+    # Handle invalid form submissions
     def form_invalid(self, form):
         messages.error(self.request, 'Please fix the errors below and try again.')
         return super().form_invalid(form)
 
+    # Override context to show seat map and availability
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['available_seats'] = Seat.objects.filter(booking_status=False).count()  # show remaining seats
-        form = context['form']
 
+        # show remaining seats
+        context['available_seats'] = Seat.objects.filter(booking_status=False).count()
+        form = context['form']
+        
         selected_movie = None
         movie_value = form['movie'].value()
         if movie_value:
@@ -121,9 +133,9 @@ class SeatBookingView(LoginRequiredMixin, generic.CreateView):
 
 
 class RegisterView(generic.CreateView):
-    form_class = UserCreationForm  # default Django user creation form
+    form_class = UserCreationForm                 # default Django user creation form
     template_name = 'registration/register.html'  # registration page template
-    success_url = reverse_lazy('login')  # send users to sign-in after registering
+    success_url = reverse_lazy('login')           # send users to sign-in after registering
 
 
 # REST API viewsets (JSON responses)
@@ -146,29 +158,42 @@ class BookingViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]              # read for all, write for authed users
     http_method_names = ['get', 'post', 'delete', 'head', 'options']          # bookings allow create/list/delete
 
+    # Override create to enforce seat availability and assign user
     def perform_create(self, serializer):
-        seat = serializer.validated_data['seat']  # seat chosen in the payload
+        # Get the seat being booked
+        seat = serializer.validated_data['seat']
+
+        # Ensure the seat is still available
         if seat.booking_status:
             raise ValidationError({'seat_id': 'That seat is already booked.'})
 
+        # Proceed with booking
         booking = serializer.save(
             user=self.request.user if self.request.user.is_authenticated else None  # stamp booking owner
         )
-        seat.booking_status = True  # mark as reserved
+
+        # Mark the seat as booked and save
+        seat.booking_status = True
         seat.save(update_fields=['booking_status'])
+
         return booking
 
+    # Override delete to free up the seat
     def perform_destroy(self, instance):
         seat = instance.seat
         instance.delete()
         seat.booking_status = False  # free up the seat
         seat.save(update_fields=['booking_status'])
 
+    # Override queryset to restrict data based on user role
     def get_queryset(self):
         base_qs = super().get_queryset()
         user = self.request.user
-        if user.is_authenticated and user.is_staff:
-            return base_qs  # staff can see all bookings
+        
+        # regular users see their own
         if user.is_authenticated:
-            return base_qs.filter(user=user)  # regular users see their own
-        return base_qs.none()  # anonymous users get no bookings
+            # Return user's own bookings
+            return base_qs.filter(user=user) 
+        
+        # anonymous users see none 
+        return base_qs.none()
