@@ -4,9 +4,9 @@ services:
     env: python
     plan: free
     rootDir: homework2/Bookings
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
-    startCommand: gunicorn Bookings.wsgi
-    preDeployCommand: python manage.py migrate
+    buildCommand: pip install -r homework2/Bookings/requirements.txt && python homework2/Bookings/manage.py collectstatic --no-input
+    startCommand: gunicorn Bookings.wsgi --chdir homework2/Bookings
+    preDeployCommand: python homework2/Bookings/manage.py migrate
     envVars:
       - key: DJANGO_DEBUG
         value: 'False'

@@ -1,1 +1,1 @@
-web: gunicorn Bookings.wsgi
+web: gunicorn Bookings.wsgi --chdir homework2/Bookings
