@@ -35,6 +35,6 @@ urlpatterns = [
 
 
     # --- API ---
-    path('api/', include(router.urls)),     # include the DRF router URLs
+    path('api/', include(router.urls)),                                            # include the DRF router URLs
     path('api/auth/', include('rest_framework.urls', namespace='rest_framework')), # DRF login/logout
 ]

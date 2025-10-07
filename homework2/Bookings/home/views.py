@@ -45,9 +45,10 @@ class BookingHistoryView(LoginRequiredMixin, generic.ListView):
             .order_by('-booking_date')  # newest first
         )
 
+    # Override context to indicate if there are any bookings
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)  # start with default context
-        context['has_bookings'] = context['booking_list'].exists()  # toggle empty-state UI
+        context = super().get_context_data(**kwargs)               
+        context['has_bookings'] = context['booking_list'].exists()
         return context
 
 
